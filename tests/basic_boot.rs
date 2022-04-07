@@ -1,32 +1,32 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
+//#![test_runner(crate::test_runner)]
 #![test_runner(lhy_blog_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+
 use lhy_blog_os::println;
 
-#[cfg(not(test))]
-#[panic_handler]
-fn panic(_info: &PanicInfo) ->! {
-    println!("{}", _info);
-    loop{}
+#[test_case]
+fn test_println() {
+    println!("test_println output");
 }
 
-#[cfg(test)]
+#[no_mangle] // don't mangle the name of this function
+pub extern "C" fn _start() -> ! {
+    test_main();
+
+    loop {}
+}
+
+fn test_runner(tests: &[&dyn Fn()]) {
+    unimplemented!();
+}
+
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     lhy_blog_os::test_panic_handler(info)
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
-
-    #[cfg(test)]
-    test_main();
-
-    // panic!("Some panic message");
-    loop{}
-}
